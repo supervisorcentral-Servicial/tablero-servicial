@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero — Grupo Servicial</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --verde:      #00E875;
+  --verde-dark: #00b85c;
+  --verde-bg:   #e6fdf1;
+  --azul:       #002339;
+  --azul-mid:   #0a3a56;
+  --azul-light: #cdd8e0;
+  --perla:      #EFF0EC;
+  --perla-dark: #dfe0da;
+  --white:      #ffffff;
+  --text:       #002339;
+  --text2:      #3a5566;
+  --text3:      #7a96a5;
+  --red:        #c0392b;
+  --red-bg:     #faeaea;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--perla); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+/* TOPBAR */
+.topbar {
+  background: var(--azul); padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px; position: sticky; top: 0; z-index: 200;
+}
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.logo-mark {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--verde); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 700; color: var(--azul);
+  letter-spacing: -0.5px; flex-shrink: 0;
+}
+.topbar-titles h1 { font-size: 15px; font-weight: 700; color: var(--white); letter-spacing: -0.01em; }
+.topbar-titles p  { font-size: 11px; color: var(--azul-light); font-family: var(--mono); }
+#periodBadge {
+  font-size: 11px; font-family: var(--mono);
+  background: rgba(0,232,117,0.15); border: 1px solid rgba(0,232,117,0.35);
+  padding: 4px 14px; border-radius: 99px; color: var(--verde); white-space: nowrap;
+}
+
+/* NAV TABS */
+.nav-wrap {
+  background: var(--azul-mid);
+  border-bottom: 2px solid var(--verde);
+  position: sticky; top: 60px; z-index: 190;
+  overflow-x: auto;
+}
+.nav-tabs {
+  display: flex; max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+  gap: 0; min-width: max-content;
+}
+.nav-tab {
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  padding: 10px 16px; cursor: pointer; border: none; background: transparent;
+  color: var(--azul-light); white-space: nowrap; transition: all 0.15s;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+}
+.nav-tab:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+.nav-tab.active { color: var(--verde); border-bottom-color: var(--verde); background: rgba(0,232,117,0.08); }
+.nav-tab.consolidado { color: var(--verde); font-style: italic; }
+.nav-tab.consolidado.active { background: rgba(0,232,117,0.15); }
+
+/* CONTAINER */
+.container { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+
+/* STATION PANEL */
+.station-panel { display: none; }
+.station-panel.active { display: block; }
+
+/* UPLOAD */
+.upload-card {
+  background: var(--white); border: 2px dashed var(--azul-light);
+  border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;
+  margin-bottom: 1rem; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.upload-card:hover, .upload-card.drag { border-color: var(--verde); background: var(--verde-bg); }
+.upload-card input { display: none; }
+.upload-card p { font-size: 12px; color: var(--text2); margin: 6px 0 10px; }
+.upload-btn {
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  padding: 8px 20px; border-radius: var(--radius);
+  border: none; background: var(--verde); color: var(--azul);
+  cursor: pointer; transition: background 0.12s, transform 0.1s;
+}
+.upload-btn:hover { background: var(--verde-dark); transform: translateY(-1px); }
+
+/* INFO BAR */
+.info-bar {
+  background: rgba(0,35,57,0.05); border-left: 3px solid var(--verde);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 9px 14px; font-size: 12px; color: var(--text2);
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+
+/* STORAGE BAR */
+.storage-bar {
+  background: var(--white); border: 1px solid var(--azul-light);
+  border-radius: var(--radius); padding: 9px 14px;
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.storage-bar .s-text { font-size: 11px; color: var(--text2); flex: 1; font-family: var(--mono); }
+.storage-bar .s-text strong { color: var(--azul); font-family: var(--sans); }
+.s-btn {
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  padding: 5px 12px; border-radius: var(--radius);
+  cursor: pointer; transition: all 0.12s; border: 1px solid;
+}
+.s-btn.save  { background: var(--verde); color: var(--azul); border-color: var(--verde); }
+.s-btn.save:hover  { background: var(--verde-dark); }
+.s-btn.clear { background: transparent; color: var(--red); border-color: var(--red); }
+.s-btn.clear:hover { background: var(--red-bg); }
+
+/* JSON EXPORT/IMPORT */
+.json-bar {
+  background: var(--azul-mid); padding: 0 2rem;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  border-bottom: 1px solid rgba(255,255,255,0.07); min-height: 40px;
+}
+.json-bar span { font-size: 11px; color: var(--azul-light); font-family: var(--mono); flex: 1; }
+.json-btn {
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  padding: 5px 14px; border-radius: var(--radius);
+  cursor: pointer; transition: all 0.12s; border: 1px solid; white-space: nowrap;
+}
+.json-btn.export { background: transparent; color: var(--verde); border-color: rgba(0,232,117,0.5); }
+.json-btn.export:hover { background: rgba(0,232,117,0.12); }
+.json-btn.import { background: transparent; color: var(--azul-light); border-color: rgba(255,255,255,0.2); }
+.json-btn.import:hover { background: rgba(255,255,255,0.06); }
+.json-btn.sheets { background: transparent; color: #4fc3f7; border-color: rgba(79,195,247,0.5); }
+.json-btn.sheets:hover { background: rgba(79,195,247,0.12); }
+.json-btn.sheets:disabled { opacity: 0.5; cursor: not-allowed; }
+#jsonImportInput { display: none; }
+
+/* CHIPS */
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1rem; }
+.chip {
+  font-size: 11px; font-family: var(--mono);
+  background: var(--white); border: 1px solid var(--azul-light);
+  border-radius: 99px; padding: 3px 10px; color: var(--text2);
+  display: flex; align-items: center; gap: 5px;
+}
+.chip .del { cursor: pointer; color: var(--text3); }
+.chip .del:hover { color: var(--red); }
+
+/* CONTROLS */
+.controls { display: flex; gap: 10px; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap; }
+.controls label { font-size: 12px; color: var(--text2); font-weight: 600; }
+select {
+  font-family: var(--sans); font-size: 13px;
+  padding: 7px 30px 7px 12px; border-radius: var(--radius);
+  border: 1px solid var(--azul-light); background: var(--white); color: var(--text);
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23002339' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+select:focus { outline: 2px solid var(--verde); outline-offset: 1px; }
+
+/* SECTION */
+.section { margin-bottom: 2rem; }
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: .875rem; padding-bottom: 10px;
+  border-bottom: 2px solid var(--azul);
+}
+.section-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--azul); color: var(--verde);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.section-header h2 { font-size: 14px; font-weight: 700; color: var(--azul); }
+.section-header span { font-size: 11px; font-family: var(--mono); color: var(--text3); margin-left: auto; }
+
+/* KPI */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 1rem; }
+.kpi {
+  background: var(--white); border: 1px solid var(--azul-light);
+  border-radius: var(--radius-lg); padding: 12px 14px;
+  border-top: 3px solid var(--verde);
+}
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 5px; font-weight: 600; }
+.kpi-value { font-size: 20px; font-weight: 700; color: var(--azul); letter-spacing: -0.02em; font-family: var(--mono); }
+.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 3px; font-family: var(--mono); }
+.badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700; font-family: var(--mono);
+  padding: 2px 7px; border-radius: 99px; margin-top: 4px;
+}
+.up { background: var(--verde-bg); color: var(--verde-dark); }
+.dn { background: var(--red-bg); color: var(--red); }
+.nt { background: var(--perla); color: var(--text3); border: 1px solid var(--azul-light); }
+
+/* TABLE */
+.card-wrap {
+  background: var(--white); border: 1px solid var(--azul-light);
+  border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem;
+}
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th {
+  text-align: left; padding: 9px 12px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700;
+  color: var(--white); background: var(--azul); border-bottom: 2px solid var(--verde);
+}
+td {
+  padding: 9px 12px; border-bottom: 1px solid var(--perla-dark);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+}
+td:first-child { font-family: var(--sans); font-weight: 600; font-size: 13px; color: var(--azul); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--perla); }
+.chart-wrap { padding: .875rem 1.25rem 1.25rem; }
+.chart-inner { position: relative; width: 100%; }
+
+/* CONSOLIDADO - tabla resumen estaciones */
+.est-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+.est-card {
+  background: var(--white); border: 1px solid var(--azul-light);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  cursor: pointer; transition: border-color 0.15s, transform 0.1s;
+  border-left: 4px solid var(--azul-light);
+}
+.est-card:hover { border-left-color: var(--verde); transform: translateY(-1px); }
+.est-card.has-data { border-left-color: var(--verde); }
+.est-card-name { font-size: 13px; font-weight: 700; color: var(--azul); margin-bottom: 8px; }
+.est-card-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.est-mini { font-size: 10px; }
+.est-mini .lbl { color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.est-mini .val { font-family: var(--mono); font-weight: 700; color: var(--azul); font-size: 12px; margin-top: 2px; }
+.est-mini .val.empty { color: var(--text3); font-weight: 400; }
+
+/* EMPTY */
+.empty-state { text-align: center; padding: 3rem 2rem; }
+.empty-state .big { font-size: 3rem; margin-bottom: 12px; display: block; }
+.empty-state strong { font-size: 15px; color: var(--azul); }
+.empty-state p { color: var(--text2); margin-top: 6px; font-size: 13px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999;
+  background: var(--azul); color: var(--verde);
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  padding: 10px 20px; border-radius: var(--radius);
+  border-left: 3px solid var(--verde);
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+footer {
+  text-align: center; padding: 1.5rem;
+  font-size: 11px; color: var(--text3); font-family: var(--mono);
+  border-top: 1px solid var(--azul-light);
+}
+@media (max-width: 600px) {
+  .container { padding: 1rem; }
+  .topbar { padding: 0 1rem; }
+  .nav-tabs { padding: 0 1rem; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark">GS</div>
+    <div class="topbar-titles">
+      <h1>Grupo Servicial</h1>
+      <p>Red de Estaciones · Uruguay</p>
+    </div>
+  </div>
+  <span id="periodBadge">sin datos</span>
+</div>
+
+<div class="nav-wrap">
+  <div class="json-bar">
+    <span>📦 Sesión de datos — exportá para compartir o hacer respaldo, importá para restaurar</span>
+    <input type="file" id="jsonImportInput" accept=".json">
+    <button class="json-btn export" onclick="exportJSON()">⬇ Exportar JSON</button>
+    <button class="json-btn import" onclick="document.getElementById('jsonImportInput').click()">⬆ Importar JSON</button>
+    <button class="json-btn sheets" onclick="syncFromSheets()" id="btnSheets">&#x1F504; Actualizar desde Sheets</button>
+  </div>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab consolidado active" data-station="consolidado">★ Consolidado</button>
+    <button class="nav-tab" data-station="0">Conchillas</button>
+    <button class="nav-tab" data-station="1">Ombúes Sicol</button>
+    <button class="nav-tab" data-station="2">Ombúes Dávila</button>
+    <button class="nav-tab" data-station="3">Rosario</button>
+    <button class="nav-tab" data-station="4">Tarariras</button>
+    <button class="nav-tab" data-station="5">Cufre</button>
+    <button class="nav-tab" data-station="6">Cortinas</button>
+    <button class="nav-tab" data-station="7">Cardona</button>
+    <button class="nav-tab" data-station="8">Palmira</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- PANEL CONSOLIDADO -->
+  <div class="station-panel active" id="panel-consolidado">
+    <div class="info-bar">
+      📊 <span>Vista consolidada de todas las estaciones. Cargá datos en cada pestaña individual para ver los totales acá.</span>
+    </div>
+    <div class="controls">
+      <label>Mes:</label>
+      <select id="cSelMes"><option value="">Todos los meses</option></select>
+      <label>Año:</label>
+      <select id="cSelAnio"><option value="">Todos los años</option></select>
+    </div>
+    <div id="consolidadoContent">
+      <div class="empty-state">
+        <span class="big">📊</span>
+        <strong>Cargá datos en las estaciones</strong>
+        <p>Usá las pestañas de arriba para cargar el XLSX de cada estación.<br>El consolidado se actualiza automáticamente.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANELES POR ESTACIÓN -->
+  <div id="stationPanels"></div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>Grupo Servicial · Tablero de Gestión · 9 Estaciones · Datos procesados localmente en tu navegador</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ── ESTACIONES ─────────────────────────────────────── */
+const STATIONS = [
+  { id: 0, name: 'Servicial Conchillas',  short: 'Conchillas',   brand: 'Presentti' },
+  { id: 1, name: 'Servicial Ombúes',      short: 'Ombúes Sicol', brand: 'Sicol' },
+  { id: 2, name: 'Servicial Ombúes',      short: 'Ombúes Dávila',brand: 'Dávila' },
+  { id: 3, name: 'Servicial Rosario',     short: 'Rosario',      brand: 'Roble Fuerte' },
+  { id: 4, name: 'Servicial Tarariras',   short: 'Tarariras',    brand: 'Masart' },
+  { id: 5, name: 'Servicial Cufre',       short: 'Cufre',        brand: 'Cufrecito' },
+  { id: 6, name: 'Servicial Cortinas',    short: 'Cortinas',     brand: 'Gasolinera Cortinas' },
+  { id: 7, name: 'Servicial Cardona',     short: 'Cardona',      brand: 'Servicar Cardona' },
+  { id: 8, name: 'Servicial Palmira',     short: 'Palmira',      brand: 'Ruta Doce' },
+];
+
+const MONTHS   = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Setiembre','Octubre','Noviembre','Diciembre'];
+const COMBUST  = ['Gasoil 50s','Gasoil Esp 10s','Super 95','Premium 97'];
+const LUBR     = ['ANCAP','Texaco','AdBlue'];
+const STORAGE_KEY = 'grupo_servicial_v1';
+
+/* stationData[i] = { files: [...] } */
+let stationData = STATIONS.map(() => ({ files: [] }));
+let charts = {};
+let activeTab = 'consolidado';
+
+/* ── TOAST ─────────────────────────────────────────── */
+function showToast(msg, ms=2500) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), ms);
+}
+
+/* ── STORAGE ────────────────────────────────────────── */
+function saveAll() {
+  try {
+    const payload = stationData.map(sd => ({
+      files: sd.files.map(f => ({
+        name: f.name,
+        records: f.records.map(r => ({ ...r, dt: r.dt.getTime() }))
+      }))
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ savedAt: new Date().toISOString(), stations: payload }));
+    showToast('✓ Datos guardados');
+  } catch(e) {
+    if(e.name==='QuotaExceededError') showToast('⚠ Almacenamiento lleno', 4000);
+    else showToast('⚠ Error al guardar', 3000);
+  }
+}
+
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved.stations) return;
+    saved.stations.forEach((sd, i) => {
+      if (!sd || !sd.files) return;
+      stationData[i].files = sd.files.map(f => ({
+        name: f.name,
+        records: f.records.map(r => ({ ...r, dt: new Date(r.dt) }))
+      }));
+    });
+    rebuildAllSelectors();
+    renderActive();
+    const d = new Date(saved.savedAt);
+    showToast(`✓ Datos restaurados (${d.toLocaleDateString('es-UY')})`, 3500);
+  } catch(e) {}
+}
+
+function clearStation(idx) {
+  if (!confirm(`¿Borrar todos los datos de ${STATIONS[idx].short}?`)) return;
+  stationData[idx].files = [];
+  saveAll();
+  rebuildStationUI(idx);
+  renderStation(idx);
+  renderConsolidado();
+  showToast('🗑 Datos borrados');
+}
+
+/* ── SYNC FROM GOOGLE SHEETS ──────────────────────────── */
+// URL del Apps Script — si lo volvés a publicar, actualizá esta línea
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5Oi-DzZBysQU6ofpuusyPRBPIte3AKkHWLvb4fmNB9NW3taLNbEbO8wkLKpyYrlmA/exec';
+const SHEETS = {
+  combustibles: { sheet: 'Combustibles', rp: 'PISTA' },
+  minimercado:  { sheet: 'Minimercado',  rp: 'MINIMERCADO' },
+  lubricantes:  { sheet: 'Lubricantes',  rp: 'LUBRICANTES' },
+};
+
+// Mapeo nombre en Sheets -> índice de estación (usa el campo brand)
+const SHEETS_NAME_MAP = {
+  'Presentti':    0,
+  'Sicol':        1,
+  'Davila':       2,
+  'Dávila':       2,
+  'Roble Fuerte': 3,
+  'Masart':       4,
+  'Cufrecito':    5,
+  'Cortinas':     6,
+  'Servicar':     7,
+  'Ruta Doce':    8,
+  'Ruta doce':    8,
+};
+
+/* ── PARSER SHEETS — ESTRUCTURA NUEVA ─────────────────── */
+
+const SECCION_PROD = {
+  'GASOIL':          'GASOIL 50s',
+  'GASOIL ESPECIAL': 'GASOIL Esp 10s',
+  'SUPER':           'SUPER 95',
+  'PREMIUM':         'PREMIUM 97',
+};
+
+function parseSheetNum(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  return parseFloat(String(v).replace(/\$/g,'').replace(/\./g,'').replace(',','.')) || 0;
+}
+
+function parseSheetsData(rows, sheetType) {
+  if (sheetType === 'PISTA')       return parseCombustiblesSheet(rows);
+  if (sheetType === 'MINIMERCADO') return parseSimplesSheet(rows, 'MINIMERCADO', 'MINIMERCADO', 'MINIMERCADO', false);
+  return parseSimplesSheet(rows, 'LUBRICANTES', 'LUBRICANTES', 'ANCAP', true);
+}
+
+function parseCombustiblesSheet(rows) {
+  const byStation  = {};
+  let currentSeccion = null;
+  let currentYear    = null;
+  let colEnero       = -1;
+  let estacionName   = null;
+
+  for (let i = 0; i < rows.length; i++) {
+    const row  = rows[i];
+    const col0 = String(row[0] || '').trim();
+    const col1 = String(row[1] || '').trim();
+
+    if (SECCION_PROD[col0]) { currentSeccion = col0; continue; }
+
+    const yr = parseInt(col1);
+    if (yr >= 2020 && yr <= 2030) { currentYear = yr; continue; }
+
+    if (col1 === 'MES' || String(row[2] || '').trim() === 'Enero') {
+      colEnero = row.findIndex(v => String(v || '').trim() === 'Enero');
+      continue;
+    }
+
+    if (col0 && SHEETS_NAME_MAP[col0] !== undefined) estacionName = col0;
+
+    const tipo = col1.toUpperCase();
+    if (!['LITROS CONVENIO','PESOS CONVENIO','LITROS SERVICIAL','PESOS SERVICIAL'].includes(tipo)) continue;
+    if (!estacionName || !currentSeccion || !currentYear || colEnero < 0) continue;
+
+    const idx  = SHEETS_NAME_MAP[estacionName];
+    if (idx === undefined) continue;
+    if (!byStation[idx]) byStation[idx] = [];
+
+    const prod = SECCION_PROD[currentSeccion] || currentSeccion;
+
+    for (let m = 0; m < 12; m++) {
+      const val = parseSheetNum(row[colEnero + m]);
+      if (!val) continue;
+      const dt = new Date(currentYear, m, 15).getTime();
+
+      if (tipo === 'LITROS CONVENIO') {
+        byStation[idx].push({ dt, rubroPadre:'PISTA', rubro:'COMBUSTIBLE',
+          concepto:'Crédito CONVENIOS', producto:prod, cant:val, total:0 });
+      } else if (tipo === 'PESOS CONVENIO') {
+        const ex = byStation[idx].find(r => r.dt===dt && r.producto===prod && r.concepto==='Crédito CONVENIOS' && r.total===0);
+        if (ex) { ex.total = val; } else {
+          byStation[idx].push({ dt, rubroPadre:'PISTA', rubro:'COMBUSTIBLE',
+            concepto:'Crédito CONVENIOS', producto:prod, cant:0, total:val });
+        }
+      } else if (tipo === 'LITROS SERVICIAL') {
+        byStation[idx].push({ dt, rubroPadre:'PISTA', rubro:'COMBUSTIBLE',
+          concepto:'', producto:prod, cant:val, total:0 });
+      } else if (tipo === 'PESOS SERVICIAL') {
+        const ex = byStation[idx].find(r => r.dt===dt && r.producto===prod && r.concepto==='' && r.total===0);
+        if (ex) { ex.total = val; } else {
+          byStation[idx].push({ dt, rubroPadre:'PISTA', rubro:'COMBUSTIBLE',
+            concepto:'', producto:prod, cant:0, total:val });
+        }
+      }
+    }
+  }
+  return byStation;
+}
+
+function parseSimplesSheet(rows, rubroPadre, rubro, defaultProd, esLitros) {
+  const byStation = {};
+  let currentYear = null;
+
+  for (let i = 0; i < rows.length; i++) {
+    const row  = rows[i];
+    const col0 = String(row[0] || '').trim();
+    const col1 = String(row[1] || '').trim();
+    const yr   = parseInt(col1);
+    if (yr >= 2020 && yr <= 2030) { currentYear = yr; continue; }
+    const idx = SHEETS_NAME_MAP[col0];
+    if (idx === undefined || !currentYear) continue;
+    if (!byStation[idx]) byStation[idx] = [];
+
+    for (let m = 0; m < 12; m++) {
+      const val = parseSheetNum(row[m + 2]);
+      if (!val) continue;
+      const dt = new Date(currentYear, m, 15).getTime();
+      byStation[idx].push({
+        dt, rubroPadre, rubro, concepto:'', producto:defaultProd,
+        cant:  esLitros ? val : 0,
+        total: esLitros ? 0   : val,
+      });
+    }
+  }
+  return byStation;
+}
+async function fetchSheetData(sheetName) {
+  const url  = `${APPS_SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Error HTTP ${resp.status} al leer "${sheetName}"`);
+  const json = await resp.json();
+  if (!json.ok) throw new Error(`Apps Script error en hoja "${sheetName}"`);
+  return json.data;
+}
+
+async function syncFromSheets() {
+  const btn = document.getElementById('btnSheets');
+  btn.disabled = true;
+  btn.textContent = '⏳ Cargando...';
+
+  try {
+    // Cargar las 3 hojas vía Apps Script
+    const sheetDefs = [
+      { sheet: SHEETS.combustibles.sheet, rp: SHEETS.combustibles.rp },
+      { sheet: SHEETS.minimercado.sheet,  rp: SHEETS.minimercado.rp },
+      { sheet: SHEETS.lubricantes.sheet,  rp: SHEETS.lubricantes.rp },
+    ];
+
+    // Inicializar datos por estación
+    const newData = STATIONS.map(() => ({ recs: [] }));
+
+    for (const { sheet, rp } of sheetDefs) {
+      const rows      = await fetchSheetData(sheet);
+      const byStation = parseSheetsData(rows, rp);
+      for (const [idx, recs] of Object.entries(byStation)) {
+        newData[idx].recs.push(...recs);
+      }
+    }
+
+    // Convertir a formato stationData
+    const hasExisting = stationData.some(sd => sd.files.length > 0);
+    if (hasExisting) {
+      if (!confirm('¿Reemplazar los datos actuales con los de Google Sheets?')) {
+        btn.disabled = false;
+        btn.textContent = '🔄 Actualizar desde Sheets';
+        return;
+      }
+    }
+
+    stationData = STATIONS.map((_, i) => ({
+      files: newData[i].recs.length > 0
+        ? [{ name: 'sheets_sync.xlsx', records: newData[i].recs.map(r => ({ ...r, dt: new Date(r.dt) })) }]
+        : []
+    }));
+
+    saveAll();
+    rebuildAllSelectors();
+    renderActive();
+
+    const total = newData.reduce((a, d) => a + d.recs.length, 0);
+    showToast(`✓ Sheets sincronizado · ${total.toLocaleString('es-UY')} registros`, 4000);
+
+  } catch(err) {
+    showToast('⚠ Error al conectar con Sheets: ' + err.message, 5000);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 Actualizar desde Sheets';
+  }
+}
+
+function clearAll() {
+  if (!confirm('¿Borrar TODOS los datos de todas las estaciones?')) return;
+  stationData = STATIONS.map(() => ({ files: [] }));
+  localStorage.removeItem(STORAGE_KEY);
+  rebuildAllSelectors();
+  renderActive();
+  showToast('🗑 Todos los datos borrados');
+}
+
+/* ── EXPORT JSON ────────────────────────────────────── */
+function exportJSON() {
+  const hasAny = stationData.some(sd => sd.files.length > 0);
+  if (!hasAny) { showToast('⚠ No hay datos para exportar'); return; }
+
+  const totalRecs = stationData.reduce((a, sd) => a + sd.files.reduce((b, f) => b + f.records.length, 0), 0);
+
+  const payload = {
+    version: '1.0',
+    app: 'Grupo Servicial',
+    exportedAt: new Date().toISOString(),
+    totalRecords: totalRecs,
+    stations: stationData.map((sd, i) => ({
+      id: i,
+      name: STATIONS[i].name,
+      short: STATIONS[i].short,
+      files: sd.files.map(f => ({
+        name: f.name,
+        records: f.records.map(r => ({
+          ...r,
+          dt: r.dt instanceof Date ? r.dt.getTime() : r.dt
+        }))
+      }))
+    }))
+  };
+
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const fecha = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `grupo_servicial_${fecha}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✓ JSON exportado · ${totalRecs.toLocaleString('es-UY')} registros`);
+}
+
+/* ── IMPORT JSON ────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('jsonImportInput').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Validar estructura
+      if (!data.stations || !Array.isArray(data.stations)) {
+        showToast('⚠ Archivo JSON inválido — no tiene el formato correcto', 4000);
+        return;
+      }
+      if (data.app && data.app !== 'Grupo Servicial') {
+        if (!confirm('Este JSON es de otra aplicación. ¿Querés importarlo igualmente?')) return;
+      }
+
+      const hasExisting = stationData.some(sd => sd.files.length > 0);
+      if (hasExisting) {
+        if (!confirm(`¿Reemplazar los datos actuales con los del archivo "${file.name}"?\n\nEsto sobreescribe todo lo que tenés cargado.`)) return;
+      }
+
+      // Importar
+      stationData = STATIONS.map((_, i) => ({ files: [] }));
+      data.stations.forEach(sd => {
+        const idx = sd.id;
+        if (idx === undefined || idx < 0 || idx >= STATIONS.length) return;
+        stationData[idx].files = (sd.files || []).map(f => ({
+          name: f.name,
+          records: (f.records || []).map(r => ({
+            ...r,
+            dt: new Date(r.dt)
+          }))
+        }));
+      });
+
+      // Guardar en localStorage también
+      saveAll();
+      rebuildAllSelectors();
+      renderActive();
+
+      const totalRecs = stationData.reduce((a, sd) => a + sd.files.reduce((b, f) => b + f.records.length, 0), 0);
+      const fecha = data.exportedAt ? new Date(data.exportedAt).toLocaleDateString('es-UY') : 'fecha desconocida';
+      showToast(`✓ Importado · ${totalRecs.toLocaleString('es-UY')} registros · exportado el ${fecha}`, 4000);
+
+    } catch(err) {
+      showToast('⚠ Error al leer el archivo: ' + err.message, 4000);
+    }
+  });
+});
+
+/* ── PARSE ─────────────────────────────────────────── */
+function parseNum(v) {
+  if (v==null) return 0;
+  if (typeof v==='number') return v;
+  return parseFloat(String(v).replace(/\./g,'').replace(',','.'))||0;
+}
+function parseDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return v;
+  if (typeof v==='number') { const d=XLSX.SSF.parse_date_code(v); return d?new Date(d.y,d.m-1,d.d,d.H||0,d.M||0):null; }
+  const s=String(v).trim(), m=s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m) return new Date(+m[3],+m[2]-1,+m[1]);
+  return null;
+}
+function detectFormat(rows) {
+  // Buscar la fila de encabezados (primera fila con texto)
+  for (let i=0; i<Math.min(5,rows.length); i++) {
+    const r=rows[i]; if(!r) continue;
+    const headers=r.map(v=>String(v||'').trim().toLowerCase());
+    // Formato NUEVO (16 cols): tiene "rubro padre" en col 14 (índice 14), "cantidad" en col 11
+    if (headers.includes('rubro padre')) return 'nuevo';
+    // Formato VIEJO (23 cols): tiene "rubro padre" pero en col 3 (encabezado diferente)
+    if (headers.some(h=>h.includes('rubro'))) return 'viejo';
+  }
+  // Detección por cantidad de columnas
+  const dataRows = rows.filter(r=>r&&r[1]);
+  if (dataRows.length>0) {
+    const ncols = dataRows[0].length;
+    return ncols >= 20 ? 'viejo' : 'nuevo';
+  }
+  return 'viejo';
+}
+
+function parseXLSX(buf, name) {
+  const wb=XLSX.read(buf,{type:'array',cellDates:false});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+  const formato=detectFormat(rows);
+  const records=[];
+
+  if (formato==='viejo') {
+    // Formato antiguo: 23 cols
+    // Col B(1)=Fecha, D(3)=RubroPadre, G(6)=Rubro, I(8)=Concepto, L(11)=Producto, T(19)=Cant, W(22)=Total
+    for (let i=0;i<rows.length;i++) {
+      const r=rows[i]; if(!r||!r[1]) continue;
+      const dt=parseDate(r[1]); if(!dt||isNaN(dt)) continue;
+      records.push({ dt, rubroPadre:String(r[3]||'').trim(), rubro:String(r[6]||'').trim(), concepto:String(r[8]||'').trim(), producto:String(r[11]||'').trim(), cant:parseNum(r[19]), total:parseNum(r[22]) });
+    }
+  } else {
+    // Formato nuevo: 16 cols
+    // Col B(1)=Fecha, D(3)=Concepto, F(5)=Producto, J(9)=Rubro, K(10)=PrUnitario, L(11)=Cantidad, N(13)=Total, O(14)=RubroPadre
+    for (let i=0;i<rows.length;i++) {
+      const r=rows[i]; if(!r||!r[1]) continue;
+      const dt=parseDate(r[1]); if(!dt||isNaN(dt)) continue;
+      const rubroPadre=String(r[14]||'').trim();
+      const rubro=String(r[9]||'').trim();
+      const producto=String(r[5]||'').trim();
+      const concepto=String(r[3]||'').trim();
+      const cant=parseNum(r[11]);
+      const total=parseNum(r[13]);
+      if (!rubroPadre) continue; // saltar filas de encabezado/vacías
+      records.push({ dt, rubroPadre, rubro, concepto, producto, cant, total });
+    }
+  }
+  return { name, records };
+}
+
+/* ── CATEGORIZAR ────────────────────────────────────── */
+function catRow(r) {
+  const rp=r.rubroPadre.toUpperCase(), rb=r.rubro.toUpperCase(), pr=r.producto.toUpperCase(), co=r.concepto.toLowerCase();
+  if (rp==='PISTA'&&rb==='COMBUSTIBLE') {
+    const cred=co.includes('convenio')||co.includes('crédito convenios');
+    let tipo='Combustible Otro';
+    if      (pr.includes('GASOIL 50'))                            tipo='Gasoil 50s';
+    else if (pr.includes('GASOIL ESPECIAL')||pr.includes('GASOIL ESP')) tipo='Gasoil Esp 10s';
+    else if (pr.includes('SUPER 95'))                             tipo='Super 95';
+    else if (pr.includes('PREMIUM 97'))                           tipo='Premium 97';
+    return { cat:'combustible', tipo, cred };
+  }
+  if (rp==='LUBRICANTES') {
+    let tipo='Otro';
+    if      (rb.includes('ANCAP'))                           tipo='ANCAP';
+    else if (rb.includes('CHEVRON')||rb.includes('TEXACO')) tipo='Texaco';
+    else if (rb.includes('ADBLUE'))                          tipo='AdBlue';
+    return { cat:'lubricante', tipo };
+  }
+  const MINI=['(RP)','MINIMERCADO','VETERINARIA','FERRETERIA','ADITIVOS','ACCESORIOS PISTA','REPUESTOS VARIOS PISTA','GOMERIA'];
+  if (MINI.some(p=>rp.includes(p)) && rp!=='INGRESOS (RP)' && rp!=='ADMINISTRACIÓN') return { cat:'minimercado' };
+  return null;
+}
+
+/* ── HELPERS ────────────────────────────────────────── */
+const getAllRecs = idx => stationData[idx].files.flatMap(f=>f.records);
+const getAllRecsAll = () => STATIONS.flatMap((_,i) => getAllRecs(i));
+
+function filterRecs(recs,mes,anio) {
+  return recs.filter(r=>{
+    if(mes!==''&&r.dt.getMonth()!==+mes)  return false;
+    if(anio!==''&&r.dt.getFullYear()!==+anio) return false;
+    return true;
+  });
+}
+const prevMF=(mes,anio)=>{ if(mes===''||anio==='')return()=>false; const pm=+mes===0?11:+mes-1,py=+mes===0?+anio-1:+anio; return r=>r.dt.getMonth()===pm&&r.dt.getFullYear()===py; };
+const prevYF=(mes,anio)=>{ if(mes===''||anio==='')return()=>false; return r=>r.dt.getMonth()===+mes&&r.dt.getFullYear()===+anio-1; };
+
+function sumCat(recs,cat,tipo,cred) {
+  return recs.reduce((a,r)=>{ const c=catRow(r); if(!c||c.cat!==cat)return a; if(tipo&&c.tipo!==tipo)return a; if(cred!==undefined&&c.cred!==cred)return a; return a+r.total; },0);
+}
+function sumCant(recs,cat,tipo) {
+  return recs.reduce((a,r)=>{ const c=catRow(r); if(!c||c.cat!==cat)return a; if(tipo&&c.tipo!==tipo)return a; return a+r.cant; },0);
+}
+const fmt  = n=>new Intl.NumberFormat('es-UY').format(Math.round(n));
+const fmtL = n=>new Intl.NumberFormat('es-UY',{maximumFractionDigits:1}).format(n)+' L';
+const pct  = (c,p)=>(!p||!c)?null:((c-p)/Math.abs(p)*100).toFixed(1);
+function badge(v){
+  if(v===null)return'<span class="badge nt">sin dato</span>';
+  const n=parseFloat(v);
+  if(n>0)return`<span class="badge up">▲ ${n}%</span>`;
+  if(n<0)return`<span class="badge dn">▼ ${Math.abs(n)}%</span>`;
+  return'<span class="badge nt">–</span>';
+}
+
+/* ── BUILD STATION PANELS ───────────────────────────── */
+function buildPanels() {
+  const container = document.getElementById('stationPanels');
+  container.innerHTML = '';
+  STATIONS.forEach(st => {
+    const div = document.createElement('div');
+    div.className = 'station-panel';
+    div.id = `panel-${st.id}`;
+    div.innerHTML = `
+      <div class="info-bar">⛽ <span><strong>${st.name} — ${st.brand}</strong> · Cargá el XLSX exportado del sistema para esta estación</span></div>
+      <div class="upload-card" id="dz-${st.id}">
+        <input type="file" id="fi-${st.id}" accept=".xlsx,.xls" multiple>
+        <div style="font-size:2rem;margin-bottom:6px;">📂</div>
+        <p>Arrastrá el XLSX de <strong>${st.short}</strong> o hacé clic</p>
+        <button class="upload-btn" onclick="document.getElementById('fi-${st.id}').click()">Seleccionar XLSX</button>
+      </div>
+      <div class="storage-bar" id="sbar-${st.id}">
+        <span class="s-text" id="stext-${st.id}">💾 sin datos guardados</span>
+        <button class="s-btn save"  onclick="saveAll()">Guardar</button>
+        <button class="s-btn clear" id="sclear-${st.id}" onclick="clearStation(${st.id})" style="display:none">Borrar</button>
+      </div>
+      <div id="chips-${st.id}" class="chips"></div>
+      <div class="controls">
+        <label>Mes:</label>
+        <select id="sMes-${st.id}"><option value="">Todos</option></select>
+        <label>Año:</label>
+        <select id="sAnio-${st.id}"><option value="">Todos</option></select>
+      </div>
+      <div id="content-${st.id}">
+        <div class="empty-state">
+          <span class="big">⛽</span>
+          <strong>Sin datos para ${st.short}</strong>
+          <p>Cargá el archivo XLSX exportado del sistema.</p>
+        </div>
+      </div>`;
+    container.appendChild(div);
+
+    // file input listener
+    document.getElementById(`fi-${st.id}`).addEventListener('change', async e=>{
+      for(const f of e.target.files) await loadFileStation(st.id, f);
+      saveAll(); rebuildStationUI(st.id); renderStation(st.id); renderConsolidado();
+      e.target.value='';
+    });
+    // drag drop
+    const dz = document.getElementById(`dz-${st.id}`);
+    dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag');});
+    dz.addEventListener('dragleave', ()=>dz.classList.remove('drag'));
+    dz.addEventListener('drop', async e=>{
+      e.preventDefault(); dz.classList.remove('drag');
+      for(const f of e.dataTransfer.files) if(f.name.match(/\.xlsx?$/i)) await loadFileStation(st.id, f);
+      saveAll(); rebuildStationUI(st.id); renderStation(st.id); renderConsolidado();
+    });
+    // selectors
+    document.getElementById(`sMes-${st.id}`).addEventListener('change', ()=>renderStation(st.id));
+    document.getElementById(`sAnio-${st.id}`).addEventListener('change', ()=>renderStation(st.id));
+  });
+}
+
+async function loadFileStation(idx, file) {
+  if (stationData[idx].files.find(f=>f.name===file.name)) return;
+  try {
+    const buf = await file.arrayBuffer();
+    stationData[idx].files.push(parseXLSX(new Uint8Array(buf), file.name));
+  } catch(e) { alert('Error al leer '+file.name+': '+e.message); }
+}
+
+/* ── REBUILD UI ─────────────────────────────────────── */
+function rebuildStationUI(idx) {
+  const recs = getAllRecs(idx);
+  const meses=new Set(), anios=new Set();
+  recs.forEach(r=>{ meses.add(r.dt.getMonth()); anios.add(r.dt.getFullYear()); });
+
+  const sm=document.getElementById(`sMes-${idx}`), sa=document.getElementById(`sAnio-${idx}`);
+  if(!sm) return;
+  const cm=sm.value, ca=sa.value;
+  sm.innerHTML='<option value="">Todos</option>';
+  [...meses].sort((a,b)=>a-b).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=MONTHS[m];sm.appendChild(o);});
+  sa.innerHTML='<option value="">Todos</option>';
+  [...anios].sort().forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;sa.appendChild(o);});
+  if(cm)sm.value=cm; if(ca)sa.value=ca;
+
+  const chips=document.getElementById(`chips-${idx}`); chips.innerHTML='';
+  stationData[idx].files.forEach(f=>{
+    const c=document.createElement('div'); c.className='chip';
+    c.innerHTML=`📄 ${f.name} <span class="del" data-idx="${idx}" data-name="${f.name}">×</span>`;
+    chips.appendChild(c);
+  });
+  chips.querySelectorAll('.del').forEach(btn=>btn.addEventListener('click',()=>{
+    const i=+btn.dataset.idx;
+    stationData[i].files=stationData[i].files.filter(f=>f.name!==btn.dataset.name);
+    saveAll(); rebuildStationUI(i); renderStation(i); renderConsolidado();
+  }));
+
+  const stext=document.getElementById(`stext-${idx}`);
+  const sclear=document.getElementById(`sclear-${idx}`);
+  const count=stationData[idx].files.length;
+  const totalR=recs.length;
+  if(count>0){
+    stext.innerHTML=`💾 <strong>${count}</strong> archivo${count!==1?'s':''} · ${totalR.toLocaleString('es-UY')} registros`;
+    sclear.style.display='inline-block';
+  } else {
+    stext.innerHTML='💾 sin datos guardados';
+    sclear.style.display='none';
+  }
+
+  // update nav tab indicator
+  const tab=document.querySelector(`.nav-tab[data-station="${idx}"]`);
+  if(tab) tab.style.opacity=count>0?'1':'0.6';
+}
+
+function rebuildAllSelectors() {
+  STATIONS.forEach(st=>rebuildStationUI(st.id));
+  // consolidado selectors
+  const allRecs=getAllRecsAll();
+  const meses=new Set(), anios=new Set();
+  allRecs.forEach(r=>{ meses.add(r.dt.getMonth()); anios.add(r.dt.getFullYear()); });
+  const sm=document.getElementById('cSelMes'), sa=document.getElementById('cSelAnio');
+  const cm=sm.value, ca=sa.value;
+  sm.innerHTML='<option value="">Todos los meses</option>';
+  [...meses].sort((a,b)=>a-b).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=MONTHS[m];sm.appendChild(o);});
+  sa.innerHTML='<option value="">Todos los años</option>';
+  [...anios].sort().forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;sa.appendChild(o);});
+  if(cm)sm.value=cm; if(ca)sa.value=ca;
+
+  // update period badge
+  const mes=cm, anio=ca;
+  document.getElementById('periodBadge').textContent=mes!==''?(MONTHS[+mes]+(anio?' '+anio:'')):(anio||'cargando...');
+}
+
+/* ── RENDER STATION ─────────────────────────────────── */
+function renderStation(idx) {
+  const recs=getAllRecs(idx);
+  const content=document.getElementById(`content-${idx}`);
+  if(!content) return;
+
+  if(!recs.length){
+    content.innerHTML=`<div class="empty-state"><span class="big">⛽</span><strong>Sin datos para ${STATIONS[idx].short}</strong><p>Cargá el archivo XLSX exportado del sistema.</p></div>`;
+    return;
+  }
+
+  const mes=document.getElementById(`sMes-${idx}`).value;
+  const anio=document.getElementById(`sAnio-${idx}`).value;
+  const curr=filterRecs(recs,mes,anio);
+  const prevM=recs.filter(prevMF(mes,anio));
+  const prevY=recs.filter(prevYF(mes,anio));
+
+  const st=STATIONS[idx];
+  const totLit  =COMBUST.reduce((a,t)=>a+sumCant(curr,'combustible',t),0);
+  const totImp  =COMBUST.reduce((a,t)=>a+sumCat(curr,'combustible',t),0);
+  const totCred =COMBUST.reduce((a,t)=>a+sumCat(curr,'combustible',t,true),0);
+  const totLitP =COMBUST.reduce((a,t)=>a+sumCant(prevM,'combustible',t),0);
+  const totLitPY=COMBUST.reduce((a,t)=>a+sumCant(prevY,'combustible',t),0);
+
+  let combRows='';
+  COMBUST.forEach(t=>{
+    const l=sumCant(curr,'combustible',t),im=sumCat(curr,'combustible',t);
+    if(!l&&!im)return;
+    combRows+=`<tr><td>${t}</td><td>${fmtL(l)}</td><td>$ ${fmt(im)}</td><td>$ ${fmt(sumCat(curr,'combustible',t,true))}</td><td>${badge(pct(l,sumCant(prevM,'combustible',t)))}</td><td>${badge(pct(l,sumCant(prevY,'combustible',t)))}</td></tr>`;
+  });
+
+  const mini=sumCat(curr,'minimercado'), miniP=sumCat(prevM,'minimercado'), miniPY=sumCat(prevY,'minimercado');
+
+  let lubrRows='';
+  LUBR.forEach(t=>{
+    const l=sumCant(curr,'lubricante',t),im=sumCat(curr,'lubricante',t);
+    if(!l&&!im)return;
+    lubrRows+=`<tr><td>${t}</td><td>${fmtL(l)}</td><td>$ ${fmt(im)}</td><td>${badge(pct(l,sumCant(prevM,'lubricante',t)))}</td><td>${badge(pct(l,sumCant(prevY,'lubricante',t)))}</td></tr>`;
+  });
+
+  const cid=`cc${idx}`, mid=`cm${idx}`, lid=`cl${idx}`;
+
+  content.innerHTML=`
+  <div class="section">
+    <div class="section-header"><div class="section-icon">⛽</div><h2>Combustibles</h2><span>Pista — DUCSA</span></div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Total litros</div><div class="kpi-value">${fmtL(totLit)}</div>${badge(pct(totLit,totLitP))}</div>
+      <div class="kpi"><div class="kpi-label">Importe total</div><div class="kpi-value">$${fmt(totImp)}</div><div class="kpi-sub">Pesos uruguayos</div></div>
+      <div class="kpi"><div class="kpi-label">Crédito / Convenio</div><div class="kpi-value">$${fmt(totCred)}</div><div class="kpi-sub">${totImp>0?(totCred/totImp*100).toFixed(1):0}%</div></div>
+      <div class="kpi"><div class="kpi-label">vs año anterior</div><div class="kpi-value" style="font-size:16px">${pct(totLit,totLitPY)!==null?pct(totLit,totLitPY)+'%':'–'}</div>${badge(pct(totLit,totLitPY))}</div>
+    </div>
+    <div class="card-wrap">
+      <div class="tbl-wrap"><table><thead><tr><th>Combustible</th><th>Litros</th><th>Importe</th><th>Crédito/Conv.</th><th>vs mes ant.</th><th>vs año ant.</th></tr></thead><tbody>${combRows||'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:1.25rem">Sin datos</td></tr>'}</tbody></table></div>
+      <div class="chart-wrap"><div class="chart-inner" style="height:200px"><canvas id="${cid}" role="img" aria-label="Combustibles ${st.short}">Combustibles.</canvas></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><div class="section-icon">🛒</div><h2>Minimercado</h2><span>Categorías (RP)</span></div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Venta del período</div><div class="kpi-value">$${fmt(mini)}</div></div>
+      <div class="kpi"><div class="kpi-label">vs mes anterior</div><div class="kpi-value" style="font-size:16px">${pct(mini,miniP)!==null?pct(mini,miniP)+'%':'–'}</div>${badge(pct(mini,miniP))}</div>
+      <div class="kpi"><div class="kpi-label">vs año anterior</div><div class="kpi-value" style="font-size:16px">${pct(mini,miniPY)!==null?pct(mini,miniPY)+'%':'–'}</div>${badge(pct(mini,miniPY))}</div>
+    </div>
+    <div class="card-wrap"><div class="chart-wrap"><div class="chart-inner" style="height:160px"><canvas id="${mid}" role="img" aria-label="Minimercado ${st.short}">Minimercado.</canvas></div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><div class="section-icon">🔧</div><h2>Lubricantes</h2><span>ANCAP · Texaco · AdBlue</span></div>
+    <div class="kpi-row">
+      ${LUBR.map(t=>{const l=sumCant(curr,'lubricante',t),im=sumCat(curr,'lubricante',t);if(!l&&!im)return'';return`<div class="kpi"><div class="kpi-label">${t}</div><div class="kpi-value">${fmtL(l)}</div><div class="kpi-sub">$ ${fmt(im)}</div></div>`;}).join('')}
+    </div>
+    <div class="card-wrap">
+      <div class="tbl-wrap"><table><thead><tr><th>Marca</th><th>Litros</th><th>Importe</th><th>vs mes ant.</th><th>vs año ant.</th></tr></thead><tbody>${lubrRows||'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:1.25rem">Sin datos</td></tr>'}</tbody></table></div>
+      <div class="chart-wrap"><div class="chart-inner" style="height:170px"><canvas id="${lid}" role="img" aria-label="Lubricantes ${st.short}">Lubricantes.</canvas></div></div>
+    </div>
+  </div>`;
+
+  // destroy old charts for this station
+  [cid,mid,lid].forEach(id=>{ if(charts[id]){try{charts[id].destroy();}catch(e){} delete charts[id]; } });
+
+  const VERDE='#00E875',AZUL='#002339',MID='#b0bcc4',gridC='rgba(0,35,57,0.06)',textC='#7a96a5',fCfg={size:11,family:'DM Mono, monospace'};
+  const opts=yFmt=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:textC,font:fCfg,boxWidth:9,padding:10}}},scales:{x:{ticks:{color:textC,font:fCfg},grid:{color:gridC}},y:{ticks:{color:textC,font:fCfg,callback:yFmt},grid:{color:gridC}}}});
+
+  const aC=COMBUST.filter(t=>sumCant(curr,'combustible',t)||sumCant(prevM,'combustible',t));
+  if(aC.length) charts[cid]=new Chart(document.getElementById(cid),{type:'bar',data:{labels:aC,datasets:[{label:'Actual',data:aC.map(t=>sumCant(curr,'combustible',t)),backgroundColor:VERDE},{label:'Mes ant.',data:aC.map(t=>sumCant(prevM,'combustible',t)),backgroundColor:MID},{label:'Año ant.',data:aC.map(t=>sumCant(prevY,'combustible',t)),backgroundColor:AZUL}]},options:opts(v=>fmt(v)+' L')});
+
+  charts[mid]=new Chart(document.getElementById(mid),{type:'bar',data:{labels:['Actual','Mes ant.','Año ant.'],datasets:[{data:[mini,miniP,miniPY],backgroundColor:[VERDE,MID,AZUL]}]},options:{...opts(v=>'$'+fmt(v)),plugins:{legend:{display:false}}}});
+
+  const aL=LUBR.filter(t=>sumCant(curr,'lubricante',t)||sumCant(prevM,'lubricante',t));
+  if(aL.length) charts[lid]=new Chart(document.getElementById(lid),{type:'bar',data:{labels:aL,datasets:[{label:'Actual',data:aL.map(t=>sumCant(curr,'lubricante',t)),backgroundColor:VERDE},{label:'Mes ant.',data:aL.map(t=>sumCant(prevM,'lubricante',t)),backgroundColor:MID},{label:'Año ant.',data:aL.map(t=>sumCant(prevY,'lubricante',t)),backgroundColor:AZUL}]},options:opts(v=>fmt(v)+' L')});
+}
+
+/* ── RENDER CONSOLIDADO ─────────────────────────────── */
+function renderConsolidado() {
+  const mes=document.getElementById('cSelMes').value;
+  const anio=document.getElementById('cSelAnio').value;
+  const content=document.getElementById('consolidadoContent');
+
+  const hasAny=STATIONS.some((_,i)=>getAllRecs(i).length>0);
+  if(!hasAny){
+    content.innerHTML=`<div class="empty-state"><span class="big">📊</span><strong>Cargá datos en las estaciones</strong><p>Usá las pestañas de arriba para cargar el XLSX de cada estación.</p></div>`;
+    document.getElementById('periodBadge').textContent='sin datos';
+    return;
+  }
+
+  const label=mes!==''?(MONTHS[+mes]+(anio?' '+anio:'')):(anio||'Todo el período');
+  document.getElementById('periodBadge').textContent=label;
+
+  // Totales del grupo
+  const allCurr=filterRecs(getAllRecsAll(),mes,anio);
+  const allPrevM=getAllRecsAll().filter(prevMF(mes,anio));
+  const allPrevY=getAllRecsAll().filter(prevYF(mes,anio));
+
+  const gLit  =COMBUST.reduce((a,t)=>a+sumCant(allCurr,'combustible',t),0);
+  const gImp  =COMBUST.reduce((a,t)=>a+sumCat(allCurr,'combustible',t),0);
+  const gCred =COMBUST.reduce((a,t)=>a+sumCat(allCurr,'combustible',t,true),0);
+  const gLitP =COMBUST.reduce((a,t)=>a+sumCant(allPrevM,'combustible',t),0);
+  const gLitPY=COMBUST.reduce((a,t)=>a+sumCant(allPrevY,'combustible',t),0);
+  const gMini =sumCat(allCurr,'minimercado');
+  const gMiniP=sumCat(allPrevM,'minimercado');
+  const gMiniPY=sumCat(allPrevY,'minimercado');
+  const gLubImp=LUBR.reduce((a,t)=>a+sumCat(allCurr,'lubricante',t),0);
+
+  // Tabla por estación
+  let estRows='';
+  const estCards=STATIONS.map((st,i)=>{
+    const recs=getAllRecs(i);
+    if(!recs.length) return`<div class="est-card" onclick="switchTab('${i}')"><div class="est-card-name">${st.short}</div><div style="font-size:11px;color:var(--text3)">Sin datos — hacé clic para cargar</div></div>`;
+    const curr=filterRecs(recs,mes,anio);
+    const l=COMBUST.reduce((a,t)=>a+sumCant(curr,'combustible',t),0);
+    const im=COMBUST.reduce((a,t)=>a+sumCat(curr,'combustible',t),0);
+    const mn=sumCat(curr,'minimercado');
+    const lb=LUBR.reduce((a,t)=>a+sumCat(curr,'lubricante',t),0);
+    estRows+=`<tr><td>${st.short}</td><td>${fmtL(l)}</td><td>$ ${fmt(im)}</td><td>$ ${fmt(mn)}</td><td>$ ${fmt(lb)}</td><td>$ ${fmt(im+mn+lb)}</td></tr>`;
+    return`<div class="est-card has-data" onclick="switchTab('${i}')">
+      <div class="est-card-name">${st.short} <span style="font-size:11px;font-weight:400;color:var(--text3)">— ${st.brand}</span></div>
+      <div class="est-card-rows">
+        <div class="est-mini"><div class="lbl">Combustible</div><div class="val">${fmtL(l)}</div></div>
+        <div class="est-mini"><div class="lbl">Importe</div><div class="val">$${fmt(im)}</div></div>
+        <div class="est-mini"><div class="lbl">Minimercado</div><div class="val">$${fmt(mn)}</div></div>
+        <div class="est-mini"><div class="lbl">Lubricantes</div><div class="val ${!lb?'empty':''}">${lb?'$'+fmt(lb):'–'}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const cGid='cgcombust', mGid='cgmini';
+
+  content.innerHTML=`
+  <div class="section">
+    <div class="section-header"><div class="section-icon">🏢</div><h2>Grupo Servicial — Totales</h2><span>${label}</span></div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Litros totales</div><div class="kpi-value">${fmtL(gLit)}</div>${badge(pct(gLit,gLitP))}</div>
+      <div class="kpi"><div class="kpi-label">Combustible $</div><div class="kpi-value">$${fmt(gImp)}</div><div class="kpi-sub">Pesos uruguayos</div></div>
+      <div class="kpi"><div class="kpi-label">Crédito / Convenio</div><div class="kpi-value">$${fmt(gCred)}</div><div class="kpi-sub">${gImp>0?(gCred/gImp*100).toFixed(1):0}%</div></div>
+      <div class="kpi"><div class="kpi-label">Minimercado $</div><div class="kpi-value">$${fmt(gMini)}</div>${badge(pct(gMini,gMiniP))}</div>
+      <div class="kpi"><div class="kpi-label">Lubricantes $</div><div class="kpi-value">$${fmt(gLubImp)}</div></div>
+      <div class="kpi"><div class="kpi-label">vs año anterior</div><div class="kpi-value" style="font-size:16px">${pct(gLit,gLitPY)!==null?pct(gLit,gLitPY)+'%':'–'}</div>${badge(pct(gLit,gLitPY))}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-icon">⛽</div><h2>Combustible por estación</h2><span>Comparativa litros</span></div>
+    <div class="card-wrap">
+      <div class="chart-wrap"><div class="chart-inner" style="height:220px"><canvas id="${cGid}" role="img" aria-label="Combustible por estación">Combustible consolidado.</canvas></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-icon">🛒</div><h2>Minimercado por estación</h2><span>Importe $</span></div>
+    <div class="card-wrap">
+      <div class="chart-wrap"><div class="chart-inner" style="height:200px"><canvas id="${mGid}" role="img" aria-label="Minimercado por estación">Minimercado consolidado.</canvas></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-icon">📋</div><h2>Resumen por estación</h2><span>Hacé clic para ir al detalle</span></div>
+    <div class="card-wrap">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Estación</th><th>Litros</th><th>Combust. $</th><th>Minimercado $</th><th>Lubricantes $</th><th>Total $</th></tr></thead>
+        <tbody>${estRows||'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:1.25rem">Sin datos en este período</td></tr>'}</tbody>
+      </table></div>
+    </div>
+    <div class="est-grid">${estCards}</div>
+  </div>`;
+
+  // destroy old consolidado charts
+  [cGid,mGid].forEach(id=>{ if(charts[id]){try{charts[id].destroy();}catch(e){} delete charts[id]; } });
+
+  const VERDE='#00E875',AZUL='#002339',MID='#b0bcc4',gridC='rgba(0,35,57,0.06)',textC='#7a96a5',fCfg={size:11,family:'DM Mono, monospace'};
+  const opts=yFmt=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:textC,font:fCfg,maxRotation:35},grid:{color:gridC}},y:{ticks:{color:textC,font:fCfg,callback:yFmt},grid:{color:gridC}}}});
+
+  const stLabels=STATIONS.map(s=>s.short);
+  const stLitros=STATIONS.map((_,i)=>COMBUST.reduce((a,t)=>a+sumCant(filterRecs(getAllRecs(i),mes,anio),'combustible',t),0));
+  const stMini  =STATIONS.map((_,i)=>sumCat(filterRecs(getAllRecs(i),mes,anio),'minimercado'));
+
+  charts[cGid]=new Chart(document.getElementById(cGid),{type:'bar',data:{labels:stLabels,datasets:[{data:stLitros,backgroundColor:stLitros.map(v=>v>0?VERDE:MID)}]},options:opts(v=>fmt(v)+' L')});
+  charts[mGid]=new Chart(document.getElementById(mGid),{type:'bar',data:{labels:stLabels,datasets:[{data:stMini,backgroundColor:stMini.map(v=>v>0?VERDE:MID)}]},options:opts(v=>'$'+fmt(v))});
+}
+
+/* ── NAVIGATION ─────────────────────────────────────── */
+function switchTab(id) {
+  activeTab = id;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.station-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.nav-tab[data-station="${id}"]`).classList.add('active');
+  document.getElementById(`panel-${id}`).classList.add('active');
+  if(id==='consolidado') renderConsolidado();
+  else renderStation(+id);
+}
+
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>switchTab(tab.dataset.station));
+});
+document.getElementById('cSelMes').addEventListener('change',  ()=>{ rebuildAllSelectors(); renderConsolidado(); });
+document.getElementById('cSelAnio').addEventListener('change', ()=>{ rebuildAllSelectors(); renderConsolidado(); });
+
+/* ── RENDER ACTIVE ──────────────────────────────────── */
+function renderActive() {
+  if(activeTab==='consolidado') renderConsolidado();
+  else renderStation(+activeTab);
+}
+
+/* ── INIT ───────────────────────────────────────────── */
+buildPanels();
+loadSaved();
+rebuildAllSelectors();
+renderConsolidado();
+</script>
+</body>
+</html>
