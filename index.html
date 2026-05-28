@@ -453,7 +453,22 @@ const SECCION_PROD = {
 
 function parseSheetNum(v) {
   if (v === null || v === undefined || v === '') return 0;
-  return parseFloat(String(v).replace(/\$/g,'').replace(/\./g,'').replace(',','.')) || 0;
+  // Apps Script devuelve los números como números nativos (no strings)
+  if (typeof v === 'number') return v;
+  // Si es string, manejar formato uruguayo ($1.234.567,89) y normal
+  let s = String(v).replace(/\$/g,'').replace(/\s/g,'').trim();
+  // Detectar si usa punto como separador de miles y coma como decimal
+  // Ejemplo: "1.234.567,89" o "1.234,89"
+  if (s.indexOf(',') > s.indexOf('.') && s.indexOf(',') !== -1) {
+    // Formato uruguayo: puntos = miles, coma = decimal
+    s = s.replace(/\./g,'').replace(',','.');
+  } else if (s.indexOf('.') !== -1 && s.indexOf(',') === -1) {
+    // Formato con punto decimal normal — no tocar
+  } else {
+    // Fallback: quitar todo menos dígitos y punto
+    s = s.replace(/[^0-9.]/g,'');
+  }
+  return parseFloat(s) || 0;
 }
 
 function parseSheetsData(rows, sheetType) {
