@@ -463,32 +463,52 @@ function parseSheetsData(rows, sheetType) {
 }
 
 function parseCombustiblesSheet(rows) {
-  const byStation  = {};
+  // Estructura real:
+  // Fila 1: col A = nombre sección (GASOIL, SUPER, etc.)
+  // Fila 2: col B = 'AÑO', col C en adelante = año (2025, 2026...)
+  // Fila 3: col A = 'ESTACION', col B = 'MES', col C = Enero ... col N = Diciembre
+  // Filas datos: col A = nombre estación (solo en fila 1 del bloque, celdas combinadas)
+  //              col B = tipo (LITROS CONVENIO / PESOS CONVENIO / LITROS SERVICIAL / PESOS SERVICIAL)
+  //              col C..N = valores mensuales (índices 2..13)
+  // Meses SIEMPRE en cols C-N (índices 2-13)
+
+  const byStation    = {};
   let currentSeccion = null;
   let currentYear    = null;
-  let colEnero       = -1;
   let estacionName   = null;
+
+  const TIPOS = ['LITROS CONVENIO','PESOS CONVENIO','LITROS SERVICIAL','PESOS SERVICIAL'];
 
   for (let i = 0; i < rows.length; i++) {
     const row  = rows[i];
     const col0 = String(row[0] || '').trim();
     const col1 = String(row[1] || '').trim();
 
-    if (SECCION_PROD[col0]) { currentSeccion = col0; continue; }
+    // Detectar sección
+    if (SECCION_PROD[col0]) { currentSeccion = col0; estacionName = null; continue; }
 
-    const yr = parseInt(col1);
-    if (yr >= 2020 && yr <= 2030) { currentYear = yr; continue; }
-
-    if (col1 === 'MES' || String(row[2] || '').trim() === 'Enero') {
-      colEnero = row.findIndex(v => String(v || '').trim() === 'Enero');
-      continue;
+    // Detectar año — col B tiene el año cuando col A = '' y col C tiene número de año
+    // O cuando alguna celda de la fila tiene un año válido en posición 2+
+    if (col1 === 'AÑO' || col0 === '') {
+      for (let c = 2; c < row.length; c++) {
+        const yr = parseInt(row[c]);
+        if (yr >= 2020 && yr <= 2030) { currentYear = yr; break; }
+      }
     }
+    // También detectar año si col B tiene el año directamente
+    const yrB = parseInt(col1);
+    if (yrB >= 2020 && yrB <= 2030) { currentYear = yrB; continue; }
 
+    // Detectar fila encabezado (ESTACION / MES)
+    if (col0 === 'ESTACION' || col1 === 'MES') continue;
+
+    // Detectar nombre estación (col A no vacío y es nombre conocido)
     if (col0 && SHEETS_NAME_MAP[col0] !== undefined) estacionName = col0;
 
+    // Procesar fila de datos
     const tipo = col1.toUpperCase();
-    if (!['LITROS CONVENIO','PESOS CONVENIO','LITROS SERVICIAL','PESOS SERVICIAL'].includes(tipo)) continue;
-    if (!estacionName || !currentSeccion || !currentYear || colEnero < 0) continue;
+    if (!TIPOS.includes(tipo)) continue;
+    if (!estacionName || !currentSeccion || !currentYear) continue;
 
     const idx  = SHEETS_NAME_MAP[estacionName];
     if (idx === undefined) continue;
@@ -496,8 +516,9 @@ function parseCombustiblesSheet(rows) {
 
     const prod = SECCION_PROD[currentSeccion] || currentSeccion;
 
+    // Meses: cols C-N = índices 2-13
     for (let m = 0; m < 12; m++) {
-      const val = parseSheetNum(row[colEnero + m]);
+      const val = parseSheetNum(row[m + 2]);
       if (!val) continue;
       const dt = new Date(currentYear, m, 15).getTime();
 
